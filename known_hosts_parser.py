@@ -56,13 +56,19 @@ class KnownHost:
             self.comment = None
         self.key = PublicKey(self.base64_encoded_key)
         self.hostnames = self.hostname.strip('|').split('|')
-        self.hash_type, self.hostname_salt, self.hostname_hmac = self.hostnames[0], b64decode(self.hostnames[1]), b64decode(self.hostnames[2])
-        self.plaintext_host = None
+        if len(self.hostnames) == 1:
+            self.plaintext_host =self.hostnames[0]
+        else:
+            self.plaintext_host = None
+            self.hash_type, self.hostname_salt, self.hostname_hmac = self.hostnames[0], b64decode(self.hostnames[1]), b64decode(self.hostnames[2])
+       
 
     def match(self, host):
+        if  self.plaintext_host is not None:
+            return self.plaintext_host == host
         if self.hash_type != '1':
             raise HashTypeNotSupported(self.hash_type)
-        if hmac.HMAC(self.hostname_salt, host, 'sha1').digest() == self.hostname_hmac:
+        if hmac.HMAC(self.hostname_salt, host.encode(), 'sha1').digest() == self.hostname_hmac:
             self.plaintext_host = host
             return True
         return False
@@ -83,9 +89,8 @@ if __name__ == "__main__":
     with open(sys.argv[1], 'rt') as f:
         for line in f:
             known_hosts.append(KnownHost(line))
-    hosts_to_search = [x.encode() for x in sys.argv[2:]]
 
-    for record in known_hosts:
+    for record in sys.argv[2:]
         for host in hosts_to_search:
             if record.match(host):
                 print(record)
