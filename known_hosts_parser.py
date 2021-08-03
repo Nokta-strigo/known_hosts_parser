@@ -90,7 +90,7 @@ if __name__ == "__main__":
         for line in f:
             known_hosts.append(KnownHost(line))
 
-    for record in sys.argv[2:]
-        for host in hosts_to_search:
-            if record.match(host):
+    for record in sys.argv[2:]:
+        for host in known_hosts:
+            if host.match(record):
                 print(record)
